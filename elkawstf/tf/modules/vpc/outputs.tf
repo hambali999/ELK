@@ -3,7 +3,7 @@ output "vpc_id" {
 }
 
 output "subnet_ids" {
-  value = aws_subnet.elastic_stack_subnet[*].id
+  value = values(aws_subnet.elastic_stack_subnet)[*].id
 }
 
 output "route_table_id" {
