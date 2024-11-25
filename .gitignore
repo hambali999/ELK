@@ -1,6 +1,9 @@
 
 # my custom
 .env
+*.pem
+*.pub
+tfkey
 
 # Local .terraform directories
 **/.terraform/*
