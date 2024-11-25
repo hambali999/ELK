@@ -45,3 +45,5 @@ podman run -d --pod elk-pod --name kibana \
 
 apt-get update
 apt-get install nano
+
+test
