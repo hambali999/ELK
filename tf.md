@@ -1,8 +1,8 @@
 # terraform init
 
-# terraform plan
-
 # terraform validate
+
+# terraform plan
 
 # terraform fmt
 
