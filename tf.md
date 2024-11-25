@@ -10,3 +10,5 @@
 
 # terraform destroy
 
+# TF_LOG=DEBUG terraform apply
+
