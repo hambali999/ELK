@@ -10,6 +10,13 @@ resource "aws_security_group" "elasticsearch_sg" {
     to_port     = 22
   }
   ingress {
+    description = "Allow all inbound traffic"
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0
+    protocol    = "tcp"
+    to_port     = 65535
+  }
+  ingress {
     description     = "ingress rules"
     from_port       = 9200
     protocol        = "tcp"

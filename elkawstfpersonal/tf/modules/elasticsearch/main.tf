@@ -4,13 +4,14 @@ module "ec2_instance" {
   count         = 1
   name          = "elasticsearch-instance"
   ami           = "ami-047126e50991d067b"
-  instance_type = "t2.micro"
+  instance_type = "t2.medium"
   key_name      = "tfkey"
   # monitoring             = true
   vpc_security_group_ids      = [var.elasticsearch_sg_id]
   subnet_id                   = var.subnet_ids[count.index]
   associate_public_ip_address = true
 
+  user_data = file("${path.module}/../../scripts/elasticsearch/install_elasticsearch.sh")
 
   tags = {
     Terraform   = "true"
