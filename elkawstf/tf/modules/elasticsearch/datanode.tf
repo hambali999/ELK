@@ -1,26 +1,26 @@
 # Elastic-Search data nodes setup
 resource "aws_key_pair" "elastic_datanode_ssh_key" {
-  key_name="elasticsearch_datanode_ssh"
-  public_key= file("~/.ssh/elasticsearch_keypair.pub")
+  key_name   = "elasticsearch_datanode_ssh"
+  public_key = file("~/.ssh/elasticsearch_keypair.pub")
 }
 resource "aws_instance" "elastic_datanodes" {
-  count                  = 1
-  ami                    = var.elastic_aws_ami
-  instance_type          = var.elastic_aws_instance_type
-  subnet_id              = var.public_subnet_ids[count.index]
-  vpc_security_group_ids = var.aws_security_group_elasticsearch_sg
-  key_name               = aws_key_pair.elastic_ssh_key.key_name
-  iam_instance_profile   = "${aws_iam_instance_profile.elastic_ec2_instance_profile.name}"
+  count                       = 1
+  ami                         = var.elastic_aws_ami
+  instance_type               = var.elastic_aws_instance_type
+  subnet_id                   = var.public_subnet_ids[count.index]
+  vpc_security_group_ids      = var.aws_security_group_elasticsearch_sg
+  key_name                    = aws_key_pair.elastic_ssh_key.key_name
+  iam_instance_profile        = aws_iam_instance_profile.elastic_ec2_instance_profile.name
   associate_public_ip_address = true
   tags = {
     Name = "elasticsearch dev node-${count.index + 2}"
   }
 }
 data "template_file" "init_es_datanode" {
-  depends_on = [ 
+  depends_on = [
     aws_instance.elastic_datanodes
   ]
-  count          = 1
+  count    = 1
   template = file("./elasticsearch/configs/elasticsearch_datanode_config.tpl")
   vars = {
     cluster_name = "elasticsearch_cluster"
@@ -33,10 +33,10 @@ data "template_file" "init_es_datanode" {
 }
 
 data "template_file" "init_backupscript_datanode" {
-  depends_on = [ 
+  depends_on = [
     aws_instance.elastic_datanodes
   ]
-  count          = 1
+  count    = 1
   template = file("./elasticsearch/configs/s3_backup_script.tpl")
   vars = {
     cluster_name = "elasticsearch_cluster"
@@ -59,35 +59,35 @@ data "template_file" "init_backupscript_datanode" {
 # }
 
 resource "null_resource" "move_es_datanode_file" {
-  count          = 1
+  count = 1
   connection {
-     type        = "ssh"
-     user        = "ec2-user"
-     private_key = file("~/.ssh/elasticsearch_keypair.pem")
-     host        = aws_instance.elastic_datanodes[count.index].public_ip
-  } 
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("~/.ssh/elasticsearch_keypair.pem")
+    host        = aws_instance.elastic_datanodes[count.index].public_ip
+  }
   provisioner "file" {
-    content      = data.template_file.init_es_datanode[count.index].rendered
-    destination  = "elasticsearch_datanode.yml"
+    content     = data.template_file.init_es_datanode[count.index].rendered
+    destination = "elasticsearch_datanode.yml"
   }
 
   provisioner "file" {
-    content      = data.template_file.init_backupscript_datanode[count.index].rendered
-    destination  = "s3_backup_script.sh"
+    content     = data.template_file.init_backupscript_datanode[count.index].rendered
+    destination = "s3_backup_script.sh"
 
   }
 
 }
 resource "null_resource" "start_es_datanodes" {
-  depends_on     = [ 
+  depends_on = [
     null_resource.move_es_datanode_file
   ]
-  count          = 1
+  count = 1
   connection {
-     type        = "ssh"
-     user        = "ec2-user"
-     private_key = file("~/.ssh/elasticsearch_keypair.pem")
-     host        = aws_instance.elastic_datanodes[count.index].public_ip
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("~/.ssh/elasticsearch_keypair.pem")
+    host        = aws_instance.elastic_datanodes[count.index].public_ip
   }
   provisioner "remote-exec" {
     inline = [
@@ -98,8 +98,8 @@ resource "null_resource" "start_es_datanodes" {
       "sudo systemctl daemon-reload",
       "sudo systemctl enable elasticsearch.service",
       "sudo chmod -R 777 /etc/elasticsearch",
-      "sudo sed -i 's@-Xms1g@-Xms${aws_instance.elastic_datanodes[count.index].root_block_device[0].volume_size/2}g@g' /etc/elasticsearch/jvm.options",
-      "sudo sed -i 's@-Xmx1g@-Xmx${aws_instance.elastic_datanodes[count.index].root_block_device[0].volume_size/2}g@g' /etc/elasticsearch/jvm.options",
+      "sudo sed -i 's@-Xms1g@-Xms${aws_instance.elastic_datanodes[count.index].root_block_device[0].volume_size / 2}g@g' /etc/elasticsearch/jvm.options",
+      "sudo sed -i 's@-Xmx1g@-Xmx${aws_instance.elastic_datanodes[count.index].root_block_device[0].volume_size / 2}g@g' /etc/elasticsearch/jvm.options",
       # "sudo sed -i 's/#network.host: 192.168.0.1/network.host: 0.0.0.0/g' /etc/elasticsearch/elasticsearch.yml",
       "sudo rm /etc/elasticsearch/elasticsearch.yml",
       "sudo cp elasticsearch_datanode.yml /etc/elasticsearch/elasticsearch.yml",

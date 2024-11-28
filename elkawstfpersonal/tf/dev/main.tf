@@ -12,7 +12,12 @@ module "securitygroup" {
 }
 
 module "elasticsearch" {
-  source              = "../../../elkawstfpersonal/tf/modules/elasticsearch"
+  source              = "../modules/elasticsearch/"
   elasticsearch_sg_id = module.securitygroup.elasticsearch_sg_id
   subnet_ids          = module.vpc.subnet_ids
+  aws_iam_instance_profile_name = module.iam.aws_iam_instance_profile_name
+}
+
+module "iam" {
+  source = "../modules/iam"
 }

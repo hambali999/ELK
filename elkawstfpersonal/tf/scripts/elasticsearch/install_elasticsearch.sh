@@ -3,7 +3,8 @@
 # Update and install dependencies
 sudo apt update
 sudo apt install -y wget tar
-sudo apt install default-jre 
+# sudo apt install default-jre 
+sudo apt install openjdk-21-jre-headless
 
 # Download and verify Elasticsearch
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.16.1-linux-x86_64.tar.gz
@@ -30,7 +31,9 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 # Fetch the custom elasticsearch.yml from S3 and replace the existing one
-aws s3 cp s3://your-bucket-name/elasticsearch.yml /usr/local/elasticsearch/config/elasticsearch.yml
+aws s3 cp s3://mysgelkbucket/elasticsearch.yml /usr/local/elasticsearch/config/elasticsearch.yml
+aws s3 cp elasticsearch.yml s3://mysgelkbucket/elasticsearch.yml
+aws s3 api wait bucket-exists --bucket mysgelkbucket
 
 # Set permissions for the new elasticsearch.yml
 sudo chown elasticsearch:elasticsearch /usr/local/elasticsearch/config/elasticsearch.yml
@@ -69,9 +72,12 @@ sudo systemctl start elasticsearch
 ps aux | grep elasticsearch
 
 # Check logs for any errors
-cat /usr/local/elasticsearch/logs/elasticsearch.log
+# cat /usr/local/elasticsearch/logs/elasticsearch.log
 
 # check systemctl elasticsearch.service is running
 systemctl status elasticsearch.service
 curl -X GET "http://localhost:9200/"
+
+
+
 

@@ -13,11 +13,14 @@ module "ec2_instance" {
 
   user_data = file("${path.module}/../../scripts/elasticsearch/install_elasticsearch.sh")
 
+  iam_instance_profile = var.aws_iam_instance_profile_name
+
   tags = {
     Terraform   = "true"
     Environment = "dev"
   }
 }
+
 
 resource "aws_key_pair" "my_key_pair" {
   key_name   = "tfkey"

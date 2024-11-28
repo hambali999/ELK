@@ -8,6 +8,11 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
+variable "aws_iam_instance_profile_name"  {
+  description = "The instance profile name"
+  type        = string
+}
+
 # variable "PAT" {
 #   description = "Path to the public key file"
 #   type        = string
