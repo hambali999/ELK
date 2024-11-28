@@ -1,10 +1,15 @@
 #!/bin/bash
 
+# Wait for User Data to be Completed
+REGION=$(curl http://169.254.169.254/latest/meta-data/placement/availability-zone)
+INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+
 # Update and install dependencies
-sudo apt update
-sudo apt install -y wget tar
-# sudo apt install default-jre 
-sudo apt install openjdk-21-jre-headless
+sudo apt update && sudo apt install -y wget tar unzip openjdk-21-jre-headless > /tmp/dependencies_install.log 2>&1
+sudo apt-get upgrade -y
+sudo apt-get install -y jq curl
+
+echo "=== Starting Elasticsearch setup... ==="
 
 # Download and verify Elasticsearch
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.16.1-linux-x86_64.tar.gz
@@ -19,29 +24,14 @@ sudo mv elasticsearch-8.16.1 /usr/local/elasticsearch
 sudo useradd -m -s /bin/bash elasticsearch_user
 sudo chown -R elasticsearch_user:elasticsearch_user /usr/local/elasticsearch
 
-# Add environment variables (optional, if needed)
+# Add Elasticsearch to PATH
 echo 'export PATH=$PATH:/usr/local/elasticsearch/bin' | sudo tee -a /home/elasticsearch_user/.bashrc
 
-# Install unzip 
-sudo apt-get -y install unzip
-
-# Install AWS CLI to download from S3 (if not installed)
+# Install AWS CLI
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
-
-# Fetch the custom elasticsearch.yml from S3 and replace the existing one
-aws s3 cp s3://mysgelkbucket/elasticsearch.yml /usr/local/elasticsearch/config/elasticsearch.yml
-aws s3 cp elasticsearch.yml s3://mysgelkbucket/elasticsearch.yml
-aws s3 api wait bucket-exists --bucket mysgelkbucket
-
-# Set permissions for the new elasticsearch.yml
-sudo chown elasticsearch:elasticsearch /usr/local/elasticsearch/config/elasticsearch.yml
-sudo chmod 644 /usr/local/elasticsearch/config/elasticsearch.yml
-
-# Run Elasticsearch as non-root user
-sudo -u elasticsearch_user /usr/local/elasticsearch/bin/elasticsearch &
-
+export PATH=$PATH:/usr/local/bin
 
 # Create a systemd service for Elasticsearch
 cat <<EOF | sudo tee /etc/systemd/system/elasticsearch.service
@@ -63,21 +53,34 @@ LimitNOFILE=65535
 WantedBy=multi-user.target
 EOF
 
+# Fetch the custom elasticsearch.yml from S3 and set permissions
+aws s3 cp s3://mysgelkbucket/elasticsearch.yml /usr/local/elasticsearch/config/elasticsearch.yml
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to fetch elasticsearch.yml from S3"
+  exit 1
+fi
+sudo chown elasticsearch_user:elasticsearch_user /usr/local/elasticsearch/config/elasticsearch.yml
+sudo chmod 660 /usr/local/elasticsearch/config/elasticsearch.yml
+
 # Reload systemd and start Elasticsearch service
 sudo systemctl daemon-reload
 sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 
-# Check if Elasticsearch is running
-ps aux | grep elasticsearch
+# Verify Elasticsearch is running
+if ! systemctl is-active --quiet elasticsearch; then
+  echo "Error: Elasticsearch service failed to start"
+  exit 1
+fi
 
-# Check logs for any errors
-# cat /usr/local/elasticsearch/logs/elasticsearch.log
+# Confirm Elasticsearch is reachable
+curl -X GET "http://localhost:9200/" || {
+  echo "Error: Elasticsearch is not reachable"
+  exit 1
+}
 
-# check systemctl elasticsearch.service is running
-systemctl status elasticsearch.service
-curl -X GET "http://localhost:9200/"
+echo "Instance setup completed" > /var/log/instance-setup.log
 
-
-
+# Signal that setup is complete
+aws ec2 signal-instance-availability --instance-id $INSTANCE_ID
 
