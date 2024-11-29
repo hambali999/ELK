@@ -2,6 +2,13 @@
 resource "aws_security_group" "kibana_sg" {
   vpc_id = var.vpc_id
   ingress {
+    description = "Allow all inbound traffic"
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0
+    protocol    = "tcp"
+    to_port     = 65535
+  }
+  ingress {
     description = "ingress rules"
     cidr_blocks = ["0.0.0.0/0"]
     from_port   = 22
