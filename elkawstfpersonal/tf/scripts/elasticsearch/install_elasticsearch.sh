@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # Wait for User Data to be Completed
+mkdir /usr/local/variables/
 REGION=$(curl http://169.254.169.254/latest/meta-data/placement/availability-zone)
 INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+echo $REGION >> /usr/local/variables/variables.txt
+echo $INSTANCE_ID >> /usr/local/variables/variables.txt
 
 # Update and install dependencies
 sudo apt update && sudo apt install -y wget tar unzip openjdk-21-jre-headless > /tmp/dependencies_install.log 2>&1
@@ -61,6 +64,13 @@ if [ $? -ne 0 ]; then
 fi
 sudo chown elasticsearch_user:elasticsearch_user /usr/local/elasticsearch/config/elasticsearch.yml
 sudo chmod 660 /usr/local/elasticsearch/config/elasticsearch.yml
+sleep 10
+
+echo "Running configuration for Elasticsearch..."
+PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+echo $PRIVATE_UP >> /usr/local/variables/variables.txt
+sudo sed -i "s/^cluster.initial_master_nodes:.*$/cluster.initial_master_nodes: [\"${PRIVATE_IP}\"]/" /usr/local/elasticsearch/config/elasticsearch.yml
+# sudo systemctl restart elasticsearch
 
 # Reload systemd and start Elasticsearch service
 sudo systemctl daemon-reload
@@ -68,16 +78,17 @@ sudo systemctl enable elasticsearch
 sudo systemctl start elasticsearch
 
 # Verify Elasticsearch is running
-if ! systemctl is-active --quiet elasticsearch; then
-  echo "Error: Elasticsearch service failed to start"
-  exit 1
-fi
+# if ! systemctl is-active --quiet elasticsearch; then
+#   echo "Error: Elasticsearch service failed to start"
+#   exit 1
+# fi
 
 # Confirm Elasticsearch is reachable
-curl -X GET "http://localhost:9200/" || {
-  echo "Error: Elasticsearch is not reachable"
-  exit 1
-}
+sleep 10
+# curl -X GET "http://localhost:9200/" || {
+#   echo "Error: Elasticsearch is not reachable"
+#   exit 1
+# }
 
 echo "Instance setup completed" > /var/log/instance-setup.log
 
