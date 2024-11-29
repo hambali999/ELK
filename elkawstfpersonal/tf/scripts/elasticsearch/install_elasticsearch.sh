@@ -2,9 +2,10 @@
 
 # Wait for User Data to be Completed
 mkdir /usr/local/variables/
-REGION=$(curl http://169.254.169.254/latest/meta-data/placement/availability-zone)
-INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-echo $REGION >> /usr/local/variables/variables.txt
+imds_token=$( curl -Ss -H "X-aws-ec2-metadata-token-ttl-seconds: 120" -XPUT 169.254.169.254/latest/api/token )
+INSTANCE_ID=$( curl -Ss -H "X-aws-ec2-metadata-token: $imds_token" 169.254.169.254/latest/meta-data/instance-id )
+PRIVATE_IP=$( curl -Ss -H "X-aws-ec2-metadata-token: $imds_token" 169.254.169.254/latest/meta-data/local-ipv4 )
+echo $PRIVATE_IP >> /usr/local/variables/variables.txt
 echo $INSTANCE_ID >> /usr/local/variables/variables.txt
 
 # Update and install dependencies
@@ -62,13 +63,12 @@ if [ $? -ne 0 ]; then
   echo "Error: Failed to fetch elasticsearch.yml from S3"
   exit 1
 fi
+
 sudo chown elasticsearch_user:elasticsearch_user /usr/local/elasticsearch/config/elasticsearch.yml
 sudo chmod 660 /usr/local/elasticsearch/config/elasticsearch.yml
-sleep 10
+# sleep 10
 
 echo "Running configuration for Elasticsearch..."
-PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
-echo $PRIVATE_UP >> /usr/local/variables/variables.txt
 sudo sed -i "s/^cluster.initial_master_nodes:.*$/cluster.initial_master_nodes: [\"${PRIVATE_IP}\"]/" /usr/local/elasticsearch/config/elasticsearch.yml
 # sudo systemctl restart elasticsearch
 
@@ -84,14 +84,20 @@ sudo systemctl start elasticsearch
 # fi
 
 # Confirm Elasticsearch is reachable
-sleep 10
+# sleep 10
 # curl -X GET "http://localhost:9200/" || {
 #   echo "Error: Elasticsearch is not reachable"
 #   exit 1
 # }
 
+sudo systemctl status elasticsearch
+
 echo "Instance setup completed" > /var/log/instance-setup.log
 
+echo "========================"
+echo "Instance setup completed"
+
+
 # Signal that setup is complete
-aws ec2 signal-instance-availability --instance-id $INSTANCE_ID
+# aws ec2 signal-instance-availability --instance-id $INSTANCE_ID
 
