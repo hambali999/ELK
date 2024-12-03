@@ -27,4 +27,5 @@ module "kibana" {
   kibana_sg_id                  = module.securitygroup.kibana_sg_id
   subnet_ids                    = module.vpc.subnet_ids
   aws_iam_instance_profile_name = module.iam.aws_iam_instance_profile_name
+  elasticsearch_private_ip      = module.elasticsearch.elasticsearch_private_ip
 }

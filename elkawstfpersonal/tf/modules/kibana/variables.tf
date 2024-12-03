@@ -1,5 +1,5 @@
 variable "kibana_sg_id" {
-  description = "The elasticsearch securiy group id"
+  description = "The kibana securiy group id"
   type        = string
 }
 
@@ -12,3 +12,11 @@ variable "aws_iam_instance_profile_name" {
   description = "The instance profile name"
   type        = string
 }
+
+variable "elasticsearch_private_ip" {
+  description = "The elasticsearch private ip address"
+  type        = string
+  default = "127.0.0.1" 
+}
+
+

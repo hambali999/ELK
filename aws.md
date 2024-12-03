@@ -10,3 +10,6 @@ ssh <public-ip> -l ubuntu -i tfkey
 
 # user data file
 /var/lib/cloud/instance
+
+# user data logs
+/var/log/cloud-init-output.log

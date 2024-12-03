@@ -8,6 +8,8 @@ PRIVATE_IP=$( curl -Ss -H "X-aws-ec2-metadata-token: $imds_token" 169.254.169.25
 echo $PRIVATE_IP >> /usr/local/variables/variables.txt
 echo $INSTANCE_ID >> /usr/local/variables/variables.txt
 
+
+## START COMMENT TEST ##
 # Update packages
 sudo apt-get update && sudo apt-get install -y wget gnupg
 
@@ -25,3 +27,4 @@ sudo /bin/systemctl daemon-reload
 sudo /bin/systemctl enable kibana.service
 sudo systemctl start kibana.service
 sudo systemctl status kibana.service | grep "Active*"
+## END COMMENT TEST ##
