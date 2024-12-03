@@ -12,18 +12,16 @@ echo $INSTANCE_ID >> /usr/local/variables/variables.txt
 sudo apt-get update && sudo apt-get install -y wget gnupg
 
 # Install Kibana
-sudo wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch
-sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
-sudo apt-get install apt-transport-https
-echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
-sudo apt-get update && sudo apt-get install -y kibana    
-
+wget https://artifacts.elastic.co/downloads/kibana/kibana-8.16.1-amd64.deb
+shasum -a 512 kibana-8.16.1-amd64.deb 
+sudo dpkg -i kibana-8.16.1-amd64.deb
 
 # Update Kibana configuration
 echo "server.host: '0.0.0.0'" >> /etc/kibana/kibana.yml
 echo "elasticsearch.hosts: [\"http://${aws_instance.elasticsearch_instance.private_ip}:9200\"]" >> /etc/kibana/kibana.yml
 
-sudo bin/elasticsearch-create-enrollment-token -s kibana
+# sudo bin/elasticsearch-create-enrollment-token -s kibana
 sudo /bin/systemctl daemon-reload
 sudo /bin/systemctl enable kibana.service
 sudo systemctl start kibana.service
+sudo systemctl status kibana.service | grep "Active*"
