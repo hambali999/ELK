@@ -16,7 +16,7 @@ variable "aws_iam_instance_profile_name" {
 variable "elasticsearch_private_ip" {
   description = "The elasticsearch private ip address"
   type        = string
-  default = "127.0.0.1" 
+  default     = "127.0.0.1"
 }
 
 

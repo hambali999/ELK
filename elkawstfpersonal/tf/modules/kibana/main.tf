@@ -1,5 +1,5 @@
 resource "aws_instance" "kibana_instance" {
-  
+
   ami           = "ami-047126e50991d067b"
   instance_type = "t2.medium"
   key_name      = "tfkey"
@@ -37,7 +37,7 @@ resource "aws_instance" "kibana_instance" {
       "sudo /bin/systemctl enable kibana.service",
       "sudo systemctl start kibana.service"
     ]
-  } 
+  }
 
   tags = {
     Terraform   = "true"
