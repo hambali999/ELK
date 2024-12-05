@@ -36,7 +36,13 @@ curl -X GET "http://3.1.8.182:9200/my_index/_search?pretty=true" | jq '.hits.hit
 
 =====================================
 # Send logs to elasticsearch from logstash
-echo "2024-12-04T12:00:00 INFO This is a test log 3" | sudo tee -a /var/log/example.log
+echo $(date) "ERROR This is an error log 1" | sudo tee -a /var/log/example.log
+echo $(date) "ERROR This is an error log 2" | sudo tee -a /var/log/example.log
+echo $(date) "SUCCESS This is a success log 1" | sudo tee -a /var/log/example.log
+echo $(date) "SUCCESS This is a success log 2" | sudo tee -a /var/log/example.log
+echo $(date) "SUCCESS This is a success log 3" | sudo tee -a /var/log/example.log
+
+
 
 # Verify logs in elasticsearch 
 curl -X GET "http://18.140.1.255:9200/_cat/indices?v"
@@ -49,3 +55,5 @@ Enter the index pattern example-logs-* (or the actual pattern matching your indi
 Select the time field (usually @timestamp or your custom field).
 Click Create.
 
+# GROK DEBUGGER
+https://grokdebugger.com/

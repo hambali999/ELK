@@ -23,7 +23,7 @@ echo "input {
 
 filter {
   grok {
-    match => { \"message\" => \"%{LOGLEVEL:timestamp} %{LOGLEVEL:log_level} %{GREEDYDATA:message}\" }
+    match => { \"message\" => \"%{DAY:day} %{MONTH:month} %{MONTHDAY:monthdat} %{TIME:time} %{WORD:timezone} %{YEAR:year} %{WORD:status} %{GREEDYDATA:word}\" }
   }
 }
 
