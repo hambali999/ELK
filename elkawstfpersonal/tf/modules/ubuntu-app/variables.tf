@@ -45,3 +45,8 @@ variable "elasticsearch_private_ip" {
   type        = string
   default     = "127.0.0.1"
 }
+
+variable "script_path" {
+  description = "Path to the script to be executed on the instance"
+  type        = string
+}

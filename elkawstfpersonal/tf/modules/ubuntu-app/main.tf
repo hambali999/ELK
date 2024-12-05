@@ -20,15 +20,15 @@ resource "aws_instance" "ec2_instance" {
     private_key = file("~/.ssh/tfkey")
     host        = self.public_ip
   }
-  
+
   provisioner "file" {
-    source      = "${path.module}/logstash_user_data.sh" # Make sure the script is in the same directory or provide the full path
+    source      = var.script_path # Use the script path provided by the variable
     destination = "/tmp/script.sh"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/script.sh", # Make the script executable
+      "chmod +x /tmp/script.sh",                       # Make the script executable
       "/tmp/script.sh ${var.elasticsearch_private_ip}" # Run the script with an argument
     ]
   }

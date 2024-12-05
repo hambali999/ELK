@@ -41,6 +41,7 @@ module "app1" {
   subnet_ids                    = module.vpc.subnet_ids
   aws_iam_instance_profile_name = module.iam.aws_iam_instance_profile_name
   elasticsearch_private_ip      = module.elasticsearch.elasticsearch_private_ip
+  script_path                   = "${path.module}/scripts/logstash_start.sh" # Path to app1 script
 }
 
 module "app2" {
@@ -54,4 +55,5 @@ module "app2" {
   subnet_ids                    = module.vpc.subnet_ids
   aws_iam_instance_profile_name = module.iam.aws_iam_instance_profile_name
   elasticsearch_private_ip      = module.elasticsearch.elasticsearch_private_ip
+  script_path                   = "${path.module}/scripts/logstash_start.sh" # Path to app1 script
 }
