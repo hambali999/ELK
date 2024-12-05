@@ -32,5 +32,5 @@ variable "app2_ami_id" {
 variable "app2_instance_type" {
   description = "Instance type for App 2"
   type        = string
-  default     = "t2.medium"
+  default     = "t2.micro"
 }

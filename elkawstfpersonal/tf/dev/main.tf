@@ -41,7 +41,7 @@ module "app1" {
   subnet_ids                    = module.vpc.subnet_ids
   aws_iam_instance_profile_name = module.iam.aws_iam_instance_profile_name
   elasticsearch_private_ip      = module.elasticsearch.elasticsearch_private_ip
-  script_path                   = "${path.module}/scripts/logstash_start.sh" # Path to app1 script
+  script_path                   = "${path.module}/scripts/logstash_start.sh" # Path to logstash script
 }
 
 module "app2" {
@@ -49,11 +49,11 @@ module "app2" {
   ami_id                        = var.app2_ami_id
   instance_type                 = var.app2_instance_type
   key_name                      = var.key_name
-  instance_name                 = "App2-Instance-Logstash"
+  instance_name                 = "App2-Instance-Metricbeat"
   default_tags                  = { environment = var.environment }
   logstash_sg_id                = module.securitygroup.logstash_sg_id
   subnet_ids                    = module.vpc.subnet_ids
   aws_iam_instance_profile_name = module.iam.aws_iam_instance_profile_name
   elasticsearch_private_ip      = module.elasticsearch.elasticsearch_private_ip
-  script_path                   = "${path.module}/scripts/logstash_start.sh" # Path to app1 script
+  script_path                   = "${path.module}/scripts/metricbeat_start.sh" # Path to metricbeat script
 }
